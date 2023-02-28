@@ -1,6 +1,6 @@
 from penguin_game import *
 
-
+SCARE_FACTOR = 10
 # from typing import *
 
 def send_capital_reinforcement(game):
@@ -9,41 +9,54 @@ def send_capital_reinforcement(game):
     :param game:
     :return:
     """
-    dest = game.get_my_icepital_icebergs()[0]
-    nearest = get_closest_icebergs(game, dest)
-    need = (-1) * get_available_penguins(game, dest)
-
-    for i in nearest:  # send from the nearests icebergs the need.
-        i.send_penguins(dest, min(need, i.penguin_amount))
-        need -= i.penguin_amount
-
-
-def get_closest_icebergs(game, dest):
-    """
-    :param dest:
-    :return:
-    """
+    if game.get_my_icepital_icebergs() == []:
+        return
+    icepital = game.get_my_icepital_icebergs()[0]
     get_distance = lambda v: v.get_turns_till_arrival(dest)
-    closest = game.get_my_icebergs()  # .sort(key=get_distance)
-    print(closest)
-    return closest
+    icebergs = sort(game.get_my_icebergs(), get_distance)  # .sort(key=get_distance)
+    attack_potential = future_iceberg_state(icepital, icepital.get_turns_till_arrival(icebergs[0]) + SCARE_FACTOR, game, "ally")
+    if attack_potential <= 0:
+        for iceberg in icebergs:
+            to_send = min(iceberg.penguin_amount - 1, -attack_potential + 1)
+            iceberg.send_penguins(icepital, to_send)
+            attack_potential += to_send
 
 
-def future_iceberg_state(iceberg, t, game, is_Ally=True):
+
+
+
+
+
+
+def future_iceberg_state(iceberg, t, game, state):
     """
     Calculates the number of penguins in the iceberg after t turns.
-    :param is_Ally: True if the iceberg is an ally iceberg, False if it is an enemy iceberg.
+    :param state: True if the iceberg is an ally iceberg, False if it is an enemy iceberg.
     :param iceberg: The iceberg to calculate the state of.
     :param t: Time in turns.
     :param game: Game object.
     :return: Number of penguins in the iceberg after t turns.
     """
-    if is_Ally:
+    if state == "neutral":
         enemy_penguin_groups = game.get_enemy_penguin_groups()
         my_penguin_groups = game.get_my_penguin_groups()
+        enemy_groups_to_iceberg = [group for group in enemy_penguin_groups if group.destination == iceberg
+                                   and group.turns_till_arrival <= t]
+        my_groups_to_iceberg = [group for group in my_penguin_groups if group.destination == iceberg
+                                   and group.turns_till_arrival <= t]
+        current_penguin_amount = iceberg.penguin_amount
+        return current_penguin_amount + iceberg.penguins_per_turn * t - sum(
+            [group.penguin_amount for group in enemy_groups_to_iceberg]) + sum(
+            [group.penguin_amount for group in my_groups_to_iceberg])
+
+    elif state == "ally":
+        enemy_penguin_groups = game.get_enemy_penguin_groups()
+        my_penguin_groups = game.get_my_penguin_groups()
+
     else:
         enemy_penguin_groups = game.get_my_penguin_groups()
         my_penguin_groups = game.get_enemy_penguin_groups()
+
     my_groups_from_iceberg = [group for group in my_penguin_groups if group.source == iceberg]
     my_groups_to_iceberg = [group for group in my_penguin_groups if
                             group.destination == iceberg and group.turns_till_arrival <= t]
@@ -73,6 +86,6 @@ def future_iceberg_state(iceberg, t, game, is_Ally=True):
 def get_available_penguins(game, iceberg):
     available_penguins = iceberg.penguin_amount
     for t in range(game.turn, game.max_turns + 1, 1):
-        available_penguins = min(available_penguins, future_iceberg_state(iceberg, t, game))
+        available_penguins = min(available_penguins, future_iceberg_state(iceberg, t, game, "ally"))
     print("available penguins:", available_penguins)
     return available_penguins
