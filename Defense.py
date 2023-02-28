@@ -56,7 +56,10 @@ def future_iceberg_state(iceberg, t, game, is_Ally=True):
     # calculate how many penguins will arrive from each enemy iceberg
     penguin_arriving_from_each_iceberg = {iceberg: 0 for iceberg in game.get_enemy_icebergs()}
     for enemy_group in enemy_groups_to_iceberg:
-        penguin_arriving_from_each_iceberg[enemy_group.source] += enemy_group.penguin_amount
+        try:
+            penguin_arriving_from_each_iceberg[enemy_group.source] += enemy_group.penguin_amount
+        except KeyError:
+            pass
         for my_group in my_groups_from_iceberg:
             if my_group.destination in game.get_enemy_icebergs():
                 penguin_arriving_from_each_iceberg[my_group.destination] -= my_group.penguin_amount
