@@ -1,4 +1,6 @@
 from penguin_game import *
+from Defense import *
+
 class AttackPlan:
     def __init__(self, source, destination, penguins):
         self.source = source
@@ -7,11 +9,15 @@ class AttackPlan:
 
     def activate(self):
         self.source.send_penguins(self.destination, self.penguins)
+
+
 def check_if_have_enough_penguins_to_attack(game, my_iceberg, other_iceberg):
-    if my_iceberg.penguin_amount > other_iceberg.penguin_amount:
+    if get_available_penguins(game,my_iceberg) > other_iceberg.penguin_amount:
         return True
     else:
         return False
+
+
 def get_closest_netural(game, iceberg):
     closest = None
     for neutral in game.get_neutral_icebergs():
@@ -21,13 +27,15 @@ def get_closest_netural(game, iceberg):
             closest = neutral
     return closest
 
+
 def get_closest_netural_for_all(game):
     closest = None
     for my_iceberg in game.get_my_icebergs():
         if closest is None:
             if can_attack_closest_netural(game, my_iceberg):
-                closest = Min_Attack_Plan(game, my_iceberg, get_closest_netural(game, my_iceberg))
-        elif my_iceberg.get_turns_till_arrival(closest.destination) > my_iceberg.get_turns_till_arrival(get_closest_netural(game, my_iceberg)) and can_attack_closest_netural(
+                closest = Min_Attack_Plan(game, my_iceberg)
+        elif my_iceberg.get_turns_till_arrival(closest.destination) > my_iceberg.distance_to(
+                get_closest_netural(game, my_iceberg)) and can_attack_closest_netural(
                 game, my_iceberg):
             closest = Min_Attack_Plan(game, my_iceberg, get_closest_netural(game, my_iceberg))
     return closest
@@ -43,7 +51,7 @@ def predict_future_state_in_arrival(game, my_iceberg, other_iceberg):
 
 
 def can_attack_closest_netural(game, my_iceberg):
-    return my_iceberg.penguin_amount > get_closest_netural(game, my_iceberg).penguin_amount
+    return get_available_penguins(game,my_iceberg) > get_closest_netural(game, my_iceberg).penguin_amount
 
 
 def cheapest_iceberg_to_upgrade(game):
