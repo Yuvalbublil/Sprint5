@@ -3,7 +3,7 @@ This is an example for a bot.
 """
 from penguin_game import *
 
-
+print "aa"
 def do_turn(game):
     """
     Makes the bot run a single turn.
@@ -15,7 +15,7 @@ def do_turn(game):
     for my_iceberg in game.get_my_icepital_icebergs():
         # The amount of penguins in my iceberg.
         my_penguin_amount = my_iceberg.penguin_amount  # type: int
-
+        
         # If there are any neutral icebergs.
         if game.get_neutral_icebergs():
             # Target a neutral iceberg.
