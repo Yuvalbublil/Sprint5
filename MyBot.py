@@ -12,8 +12,9 @@ def do_turn(game):
     :type game: Game
     """
     # Go over all of my icepitals and conquer icebergs
-    for my_iceberg in game.get_my_icepital_icebergs():
-    # The amount of penguins in my iceberg.
-        my_penguin_amount = my_iceberg.penguin_amount  # type: int
-        destination = game.get_enemy_icebergs()[0]
-        my_iceberg.send_penguins(destination, max(my_penguin_amount - 10, 0))
+    spend_penguins(game, 50)
+    # for my_iceberg in game.get_my_icepital_icebergs():
+    # # The amount of penguins in my iceberg.
+    #     my_penguin_amount = my_iceberg.penguin_amount  # type: int
+
+
