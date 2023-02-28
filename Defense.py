@@ -6,7 +6,6 @@ def future_iceberg_state(iceberg, t, game):
     :param game: Game object.
     :return: Number of penguins in the iceberg after t turns.
     """
-
     enemy_penguin_groups = game.get_enemy_penguin_groups()
     my_penguin_groups = game.get_my_penguin_groups()
     my_groups_from_iceberg = [group for group in my_penguin_groups if group.destination == iceberg]

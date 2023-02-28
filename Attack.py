@@ -17,7 +17,7 @@ def get_closest_netural(game, iceberg):
     for neutral in game.get_neutral_icebergs():
         if closest is None:
             closest = neutral
-        elif iceberg.distance_to(closest) > iceberg.distance_to(neutral):
+        elif iceberg.get_turns_till_arrival(closest) > iceberg.get_turns_till_arrival(neutral):
             closest = neutral
     return closest
 
@@ -26,16 +26,20 @@ def get_closest_netural_for_all(game):
     for my_iceberg in game.get_my_icebergs():
         if closest is None:
             if can_attack_closest_netural(game, my_iceberg):
-                closest = Min_Attack_Plan(game, my_iceberg)
-        elif my_iceberg.distance_to(closest.destination) > my_iceberg.distance_to(get_closest_netural(game, my_iceberg)) and can_attack_closest_netural(
+                closest = Min_Attack_Plan(game, my_iceberg, get_closest_netural(game, my_iceberg))
+        elif my_iceberg.get_turns_till_arrival(closest.destination) > my_iceberg.get_turns_till_arrival(get_closest_netural(game, my_iceberg)) and can_attack_closest_netural(
                 game, my_iceberg):
-            closest = Min_Attack_Plan(game, my_iceberg)
-    return AttackPlan
+            closest = Min_Attack_Plan(game, my_iceberg, get_closest_netural(game, my_iceberg))
+    return closest
 
 
-def Min_Attack_Plan(game, my_iceberg, extra_penguins=1):
-    return AttackPlan(my_iceberg, get_closest_netural(game, my_iceberg), get_closest_netural(game,
-                                                                                             my_iceberg).penguin_amount + extra_penguins)
+def Min_Attack_Plan(game, my_iceberg,target_iceberg, extra_penguins=1):
+    return AttackPlan(my_iceberg, target_iceberg, target_iceberg.penguin_amount + extra_penguins)
+
+def predict_future_state_in_arrival(game, my_iceberg, other_iceberg):
+    return other_iceberg.penguin_amount + other_iceberg.penguins_per_turn * my_iceberg.get_turns_till_arrival(
+        other_iceberg)
+
 
 
 def can_attack_closest_netural(game, my_iceberg):
@@ -55,10 +59,19 @@ def cheapest_iceberg_to_upgrade(game):
 def spend_penguins(game, amount_to_spend):
     optional_upgrade = cheapest_iceberg_to_upgrade(game)
     optional_attack = get_closest_netural_for_all(game)
+
+    if optional_attack is None:
+        if optional_upgrade is not None:
+            optional_upgrade.upgrade()
+        return None
+    if optional_upgrade is None:
+        return optional_attack.activate()
     if amount_to_spend< min(optional_attack.penguins, optional_upgrade.upgrade_cost):
         return None
-    if optional_attack is not None and optional_attack.penguins < optional_upgrade.upgrade_cost:
+    if optional_attack.penguins < optional_upgrade.upgrade_cost:
         optional_attack.activate()
-    elif optional_upgrade is not None:
+        a =optional_attack.source
+
+    else:
         optional_upgrade.upgrade()
 
