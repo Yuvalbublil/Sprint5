@@ -71,5 +71,5 @@ def get_available_penguins(game, iceberg):
     available_penguins = iceberg.penguin_amount
     for t in range(game.turn, game.max_turns + 1, 1):
         available_penguins = min(available_penguins, future_iceberg_state(iceberg, t, game))
-
+    print("available penguins:", available_penguins)
     return available_penguins
