@@ -29,21 +29,35 @@ def get_closest_icebergs(game, dest):
     return closest
 
 
-def future_iceberg_state(iceberg, t, game, is_Ally=True):
+def future_iceberg_state(iceberg, t, game, state):
     """
     Calculates the number of penguins in the iceberg after t turns.
-    :param is_Ally: True if the iceberg is an ally iceberg, False if it is an enemy iceberg.
+    :param state: True if the iceberg is an ally iceberg, False if it is an enemy iceberg.
     :param iceberg: The iceberg to calculate the state of.
     :param t: Time in turns.
     :param game: Game object.
     :return: Number of penguins in the iceberg after t turns.
     """
-    if is_Ally:
+    if state == "neutral":
         enemy_penguin_groups = game.get_enemy_penguin_groups()
         my_penguin_groups = game.get_my_penguin_groups()
+        enemy_groups_to_iceberg = [group for group in enemy_penguin_groups if group.destination == iceberg
+                                   and group.turns_till_arrival <= t]
+        my_groups_to_iceberg = [group for group in my_penguin_groups if group.destination == iceberg
+                                   and group.turns_till_arrival <= t]
+        current_penguin_amount = iceberg.penguin_amount
+        return current_penguin_amount + iceberg.penguins_per_turn * t - sum(
+            [group.penguin_amount for group in enemy_groups_to_iceberg]) + sum(
+            [group.penguin_amount for group in my_groups_to_iceberg])
+
+    elif state == "ally":
+        enemy_penguin_groups = game.get_enemy_penguin_groups()
+        my_penguin_groups = game.get_my_penguin_groups()
+
     else:
         enemy_penguin_groups = game.get_my_penguin_groups()
         my_penguin_groups = game.get_enemy_penguin_groups()
+
     my_groups_from_iceberg = [group for group in my_penguin_groups if group.source == iceberg]
     my_groups_to_iceberg = [group for group in my_penguin_groups if
                             group.destination == iceberg and group.turns_till_arrival <= t]
